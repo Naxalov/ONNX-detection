@@ -40,10 +40,7 @@ original_image = cv2.imread("../worker.jpeg")
 original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
 original_image_size = original_image.shape[:2]
 
-image_data = image_preprocess(np.copy(original_image), [input_size, input_size])
-image_data = image_data[np.newaxis, ...].astype(np.float32)
-
-print("Preprocessed image shape:",image_data.shape) # shape of the preprocessed input
+# print("Preprocessed image shape:",image_data.shape) # shape of the preprocessed input
 
 # Postprocess output
 
@@ -222,8 +219,7 @@ outputs = sess.get_outputs()
 output_names = list(map(lambda output: output.name, outputs))
 input_name = sess.get_inputs()[0].name
 
-detections = sess.run(output_names, {input_name: image_data})
-print("Output shape:", list(map(lambda detection: detection.shape, detections)))
+# print("Output shape:", list(map(lambda detection: detection.shape, detections)))
 
 
 ANCHORS = "./yolov4_anchors.txt"
@@ -233,20 +229,25 @@ XYSCALE = [1.2, 1.1, 1.05]
 ANCHORS = get_anchors(ANCHORS)
 STRIDES = np.array(STRIDES)
 
-pred_bbox = postprocess_bbbox(detections, ANCHORS, STRIDES, XYSCALE)
-bboxes = postprocess_boxes(pred_bbox, original_image_size, input_size, 0.55)
-bboxes = nms(bboxes, 0.213, method='nms')
-image = draw_bbox(original_image, bboxes)
-
 
 cap = cv2.VideoCapture('../CASE_1.mov')
 while True:
     ret, frame = cap.read()
     if frame is None:
         break
- 
+    image_data = image_preprocess(np.copy(frame), [input_size, input_size])
+    image_data = image_data[np.newaxis, ...].astype(np.float32)
+
+    detections = sess.run(output_names, {input_name: image_data})
+
+    pred_bbox = postprocess_bbbox(detections, ANCHORS, STRIDES, XYSCALE)
+    bboxes = postprocess_boxes(pred_bbox, original_image_size, input_size, 0.55)
+    bboxes = nms(bboxes, 0.213, method='nms')
+    image = draw_bbox(frame, bboxes)
+
+
   
-    cv2.imshow('Frame', frame)
+    cv2.imshow('Frame', image)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
