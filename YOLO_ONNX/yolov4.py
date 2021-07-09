@@ -45,7 +45,7 @@ print("Preprocessed image shape:",image_data.shape) # shape of the preprocessed 
 
 # Step 3: Inference
 
-sess = rt.InferenceSession("model.onnx")
+sess = rt.InferenceSession("yolov4.onnx")
 
 outputs = sess.get_outputs()
 output_names = list(map(lambda output: output.name, outputs))
